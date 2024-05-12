@@ -1,0 +1,90 @@
+# Example
+
+```{r}
+library(devtools)
+load_all(".")
+```
+
+Read data
+
+```{r}
+bety <- read.csv("../data/BETY_disc.csv")
+
+lalg <- function(data){
+  bn <- hc(x = data, perturb = 2, restart = 20)
+}
+bn <- learn_bn(bety, lalg)
+```
+
+Variables
+
+```{r}
+targetVars <- c("Anxiety",  "Function", "Pain")
+#, name = "bety_Expert", arc_set = bety_expert)
+vars <- bn$universe$nodes
+input <- vars[! vars %in% targetVars]
+```
+
+```{r}
+res_iter <- cat_iterations(bn, data = bety[1,], target=targetVars,query = input,num_iter = length(input),store_bns = TRUE)
+```
+
+```{r}
+avedist <- distance_to_all_queries(res_iter)
+print(avedist)
+```
+
+```{r}
+questionErrors(res_iter$bns[[1]],bety[1,],  input)
+```
+```{r}
+questionErrors(res_iter$bns[[1]], bety[1,], input,numericStates = FALSE)
+```
+
+```{r}
+errorAllQuestions(res_iter$bns, bety[1,], targetVars,numericStates = FALSE)
+```
+
+
+```{r}
+errorAllQuestions(res_iter$bns, bety[1,], targetVars,numericStates = FALSE)
+```
+```{r}
+pb <- txtProgressBar(min = 0, max = nrow(bety), style = 3)
+res <- lapply(1:nrow(bety), 
+              function(x, data){
+                setTxtProgressBar(pb, x)
+                cat_iterations(bn = bn, target = targetVars, query = input, data = data[x,], num_iter=length(input),store_bns = TRUE)},
+              bety)
+```
+
+
+
+```{r}
+pred <- predictIterations(res, targetVars)
+pred[[1]][["Anxiety"]]
+```
+
+
+```{r}
+res[[1]]$iter_posteriors[[1]][["Anxiety"]]
+```
+
+
+```{r}
+probPredictions(res,"Anxiety",1)
+```
+
+
+```{r}
+bns <- learnOneOut(bety, lalg)
+res <- lapply(1:length(bns), 
+              function(x, models, data){cat_iterations(bn = models[[x]]$bn, target = targetVars, query = input, data = data[x,], num_iter=length(input),store_bns = TRUE)},
+              bns, bety)
+```
+
+
+```{r}
+performance(res, bety[1:5,], targetVars)
+
+```

@@ -1,0 +1,70 @@
+```{r}
+library(devtools)
+load_all(".")
+```
+
+
+
+```{r}
+df <- read.csv("../data/Cleaned_and_scored_VFQ25.csv")
+```
+
+```{r}
+mcid <- 15
+thr <- 75
+
+stts <- c("L", "H")
+intv <- mipm_intervals(df$OverallScore, threshold= thr, MCID= mcid, states = stts, n_interval = 2, Lower_B = 0, Upper_B = 100)
+
+measured <- paste0("vfq", c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,18,19,20,21,22,23,24,25))
+target <- "lf"
+num_meaured <- length(measured)
+
+dfq <- df[measured]
+dfq[target] <- intv
+```
+
+```{r}
+
+naive_bn_dfq <- naivebn_arcs(target,measured)
+bn <- learn_bn(dfq, arc_set= naive_bn_dfq, na_omit = TRUE)
+
+```
+
+```{r}
+res_iter <- cat_iterations(bn, data = dfq[1,], target=target, query = measured,num_iter = num_measured ,store_bns = TRUE)
+```
+
+
+```{r}
+avedist <- distance_to_all_queries(res_iter)
+print(avedist)
+```
+
+
+
+```{r}
+questionErrors(res_iter$bns[[1]],dfq[1,],  measured, FALSE)
+errorAllQuestions(res_iter$bns, dfq[1,], measured,numericStates = FALSE)
+```
+
+```{r}
+questionErrors(res_iter$bns[[1]],dfq[1,],  target, FALSE)
+errorAllQuestions(res_iter$bns, dfq[1,], target, numericStates = FALSE)
+```
+
+```{r}
+pb <- txtProgressBar(min = 0, max = nrow(dfq), style = 3)
+res <- lapply(1:nrow(dfq), 
+              function(x, data){
+                setTxtProgressBar(pb, x)
+                cat_iterations(bn = bn, target = target, query = measured, data = data[x,], num_iter=num_measured,store_bns = TRUE)},
+              dfq)
+```
+
+```{r}
+perf <- performance(res, dfq, targetVars = target)
+perf
+```
+
+

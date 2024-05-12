@@ -1,0 +1,22 @@
+Package: smartPROM
+Type: Package
+Title: Bayesian Network based Computerized Adaptive Testing for Patient Reported Outcome Measures (PROM)
+Authors@R: person("Barbaros", "Yet", email = "byet@metu.edu.tr",
+  role = c("aut", "cre"),comment = c(ORCID = "0000-0003-4058-2677"))
+Version: 0.0.1.0
+Imports:
+    gRain,
+    bnlearn,
+    pROC,
+    dplyr,
+    ROI,
+    ROI.plugin.glpk,
+    ompr,
+    ompr.roi
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+RoxygenNote: 7.3.1
+Depends: 
+    R (>= 2.10)
+LazyData: true

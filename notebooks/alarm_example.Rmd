@@ -1,0 +1,51 @@
+
+```{r}
+library(devtools)
+load_all(".")
+```
+
+
+```{r}
+library(gRain)
+# Load alarm dataset
+data(alarm)
+# Load alarm bn
+data(alarm_bn)
+
+# target <- c("ANAPHYLAXIS", "HYPOVOLEMIA", "PULMEMBOLUS", "LVFAILURE", "INSUFFANESTH", "INTUBATION", "KINKEDTUBE", "DISCONNECTION")
+target <- c("ANAPHYLAXIS", "HYPOVOLEMIA", "PULMEMBOLUS")
+measured <- c("CVP", "PCWP", "HISTORY","TPR", "CO", "BP", "HRBP", "HREKG", "HRSAT", "SAO2", "FIO2", "PRESS", "EXPCO2", "PRESS", "PAP", "MINVOLSET", "MINVOL")
+num_measured <- length(measured)
+```
+
+
+```{r}
+res_iter <- cat_iterations(bn, data = df[1,], target=target, query = measured,num_iter = num_measured ,store_bns = TRUE)
+```
+
+```{r}
+avedist <- distance_to_all_queries(res_iter)
+print(avedist)
+```
+
+```{r}
+questionErrors(res_iter$bns[[1]],df[1,],  measured, FALSE)
+errorAllQuestions(res_iter$bns, df[1,], measured,numericStates = FALSE)
+```
+```{r}
+errorAllQuestions(res_iter$bns, df[1,], target,numericStates = FALSE)
+```
+```{r}
+pb <- txtProgressBar(min = 0, max = nrow(data), style = 3)
+res <- lapply(1:nrow(df), 
+              function(x, data){
+                setTxtProgressBar(pb, x)
+                cat_iterations(bn = bn, target = target, query = measured, data = data[x,], num_iter=num_measured,store_bns = TRUE)},
+              df)
+```
+
+
+```{r}
+perf <- performance(res, df, targetVars = target)
+perf
+```
