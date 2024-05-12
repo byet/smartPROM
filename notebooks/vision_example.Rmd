@@ -1,12 +1,11 @@
 ```{r}
-library(devtools)
-load_all(".")
+library(smartPROM)
 ```
 
 
 
 ```{r}
-df <- read.csv("../data/Cleaned_and_scored_VFQ25.csv")
+df <- read.csv("./data/Cleaned_and_scored_VFQ25.csv")
 ```
 
 ```{r}

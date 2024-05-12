@@ -1,14 +1,13 @@
 # Example
 
 ```{r}
-library(devtools)
-load_all(".")
+library(smartPROM)
 ```
 
 Read data
 
 ```{r}
-bety <- read.csv("../data/BETY_disc.csv")
+bety <- read.csv("./data/BETY_disc.csv")
 
 lalg <- function(data){
   bn <- hc(x = data, perturb = 2, restart = 20)
