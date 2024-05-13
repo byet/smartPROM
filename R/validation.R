@@ -6,6 +6,10 @@
 #' @param na_omit Logical
 #'
 #' @return gRain model
+#' @importFrom bnlearn hc
+#' @importFrom bnlearn arcs<-
+#' @importFrom bnlearn bn.fit
+#' @importFrom bnlearn as.grain
 #' @export
 #'
 #' @examples
@@ -90,13 +94,15 @@ naivebn_arcs <- function(factors, questions) {
 #' @param factor_names optional array of variable names. Names of latent variables
 #'
 #' @return bnlearn BN structure object
+#' @importFrom bnlearn empty.graph
+#' @importFrom bnlearn arcs
 #' @export
 #'
 #' @examples
 #'
 #'
 #'
-build_naive_str <- function(vars,
+naivebn_str <- function(vars,
                             nfac = 1,
                             factor_names = NULL) {
   bnstr = empty.graph(vars)
@@ -176,6 +182,7 @@ average_dist_models <- function(cat_iter_results, distance = "kld") {
 #' @param excludeObs logical. Exclude obeserved variables from target
 #'
 #' @return named vector
+#' @importFrom gRain querygrain
 #' @export
 #'
 #' @examples
@@ -283,6 +290,7 @@ predictTargets <- function(results, targetVars, iteration=1){
 #' @param iteration integer. Cat iteration number predictions will be calculated
 #'
 #' @return dataframe of posterior probability distributions of target variable for an iteration from each model
+#' @importFrom dplyr bind_rows
 #' @export
 #'
 #' @examples
@@ -303,6 +311,7 @@ probPredictions <- function(results, targetVar, iteration){
 #' @param targetVars vector of strings. Names of target variables.
 #'
 #' @return dataframe of AUCs. Columns are target variables, rows are CAT iterations
+#' @importFrom pROC multiclass.roc
 #' @export
 #'
 #' @examples

@@ -1,12 +1,10 @@
 
 ```{r}
-library(devtools)
-load_all(".")
+library(smartPROM)
 ```
 
 
 ```{r}
-library(gRain)
 # Load alarm dataset
 data(alarm)
 # Load alarm bn

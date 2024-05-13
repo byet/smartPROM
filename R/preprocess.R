@@ -64,7 +64,7 @@ match_normal <- function(weights, mu, sd){
   }
   
   x <- (max(mu) - min(mu)) / 2 + min(mu)
-  res <- nleqslv(x,dn)
+  res <- nleqslv::nleqslv(x,dn)
   res$x
 }
 
@@ -84,28 +84,34 @@ match_normal <- function(weights, mu, sd){
 #' @param Upper_B upper bound for the intervals
 #'
 #' @return vector of discretized factors
+#' @importFrom ompr add_variable
+#' @importFrom ompr set_objective
+#' @importFrom ompr add_constraint
+#' @importFrom ompr solve_model
+#' @importFrom ompr MIPModel
+#' @importFrom ompr.roi with_ROI
 #' @export
 #'
 #' @examples
 mipm_intervals <- function(x, threshold, MCID, n_interval, states = NULL, Big_M = 200, Lower_B, Upper_B){
   
-  result <- MIPModel() %>%
-    add_variable(d[i], i = 1:n_interval, type = "continuous", lb = Lower_B, ub = Upper_B) %>%
-    add_variable(y[i], i = 1:n_interval, type = "binary") %>%
-    add_variable(b[i, j], i = 1:n_interval, j = 1:n_interval, type = "binary") %>%
-    add_variable(FU[i, j], i = 1:n_interval, j = 1:n_interval, type = "continuous") %>%
-    add_variable(FL[i, j], i = 1:n_interval, j = 1:n_interval, type = "continuous") %>%
-    set_objective(sum_expr(FU[i, j] + FL[i, j], i = 1:n_interval, j = 1:n_interval), "min") %>%
-    add_constraint(sum_expr(d[i], i = 1:n_interval) == Upper_B) %>%
-    add_constraint(d[i] >= MCID, i = 1:n_interval) %>%
-    add_constraint(sum_expr(d[l], l = 1:i) >= (threshold - ((1-y[i])*Big_M)), i = 1:n_interval) %>%
-    add_constraint(sum_expr(d[l], l = 1:i) <= (threshold + ((1-y[i])*Big_M)), i = 1:n_interval) %>%
-    add_constraint(sum_expr(y[i], i = 1:n_interval) == 1) %>%
-    add_constraint(d[i] - d[j] == FU[i, j] - FL[i, j], i = 1:n_interval, j = 1:n_interval) %>%
-    add_constraint(FU[i, j] >= 0, i = 1:n_interval, j = 1:n_interval) %>%
-    add_constraint((b[i,j]*Big_M) >= FU[i, j], i = 1:n_interval, j = 1:n_interval) %>%
-    add_constraint(FL[i, j] >= 0, i = 1:n_interval, j = 1:n_interval) %>%
-    add_constraint(((1-b[i,j])*Big_M) >= FL[i, j], i = 1:n_interval, j = 1:n_interval) %>%
+  result <- MIPModel() |>
+    add_variable(d[i], i = 1:n_interval, type = "continuous", lb = Lower_B, ub = Upper_B) |>
+    add_variable(y[i], i = 1:n_interval, type = "binary") |>
+    add_variable(b[i, j], i = 1:n_interval, j = 1:n_interval, type = "binary") |>
+    add_variable(FU[i, j], i = 1:n_interval, j = 1:n_interval, type = "continuous") |>
+    add_variable(FL[i, j], i = 1:n_interval, j = 1:n_interval, type = "continuous") |>
+    set_objective(sum_expr(FU[i, j] + FL[i, j], i = 1:n_interval, j = 1:n_interval), "min") |>
+    add_constraint(sum_expr(d[i], i = 1:n_interval) == Upper_B) |>
+    add_constraint(d[i] >= MCID, i = 1:n_interval) |>
+    add_constraint(sum_expr(d[l], l = 1:i) >= (threshold - ((1-y[i])*Big_M)), i = 1:n_interval) |>
+    add_constraint(sum_expr(d[l], l = 1:i) <= (threshold + ((1-y[i])*Big_M)), i = 1:n_interval) |>
+    add_constraint(sum_expr(y[i], i = 1:n_interval) == 1) |>
+    add_constraint(d[i] - d[j] == FU[i, j] - FL[i, j], i = 1:n_interval, j = 1:n_interval) |>
+    add_constraint(FU[i, j] >= 0, i = 1:n_interval, j = 1:n_interval) |>
+    add_constraint((b[i,j]*Big_M) >= FU[i, j], i = 1:n_interval, j = 1:n_interval) |>
+    add_constraint(FL[i, j] >= 0, i = 1:n_interval, j = 1:n_interval) |>
+    add_constraint(((1-b[i,j])*Big_M) >= FL[i, j], i = 1:n_interval, j = 1:n_interval) |>
     solve_model(with_ROI(solver = "glpk"))
   
   names <- c()
@@ -116,6 +122,5 @@ mipm_intervals <- function(x, threshold, MCID, n_interval, states = NULL, Big_M 
   sol <- result$solution[names]
   intervals <- cumsum(as.vector(sol))
   intervals <- intervals[-length(intervals)]
-  print(intervals)
   discretize(x, cutoff = intervals, states = states)
 }

@@ -11,6 +11,8 @@
 #' @param allquery logical. Run by entering all query variables.
 #'
 #' @return list containing posterior = gRain posterior object, evidence = evidence data entered
+#' @importFrom gRain querygrain
+#' @importFrom gRain setEvidence
 #' @export
 #'
 #' @examples
@@ -72,6 +74,8 @@ rand_calc <-
 #' @param mi_check_thres number. Stopping threshold for mutual information of query variables.
 #'
 #' @return list containing posterior = gRain posterior object, evidence = evidence data entered
+#' @importFrom gRain setEvidence
+#' @importFrom gRain querygrain
 #' @export
 #'
 #' @examples

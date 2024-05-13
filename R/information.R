@@ -66,6 +66,8 @@ dist_entropy <- function(dist, target = NULL) {
 #' @param conditional array of conditional variable names
 #'
 #' @return number. Conditional entropy
+#' @importFrom gRbase tabExpand
+#' @importFrom gRbase tabMarg
 #' @export
 #'
 #' @examples
@@ -123,6 +125,7 @@ cond_entropy <- function(dist,
 #' @param var2 string or array. Variable names
 #'
 #' @return number. Mutual information
+#' @importFrom gRbase tabMarg
 #' @export
 #'
 #' @examples
@@ -145,6 +148,7 @@ mi <- function(dist, var1, var2 = NULL) {
 #' @param inputs optional, a vector, names of the input nodes. If NULL all nodes in the BN are used
 #'
 #' @return a vector of mutual information between the target and each of inputs
+#' @importFrom gRain querygrain
 #' @export
 #'
 #' @examples
@@ -195,6 +199,7 @@ mi_bn <- function(bn, target, inputs = NULL) {
 #' @param inputs optional, a vector, names of the input nodes. If NULL all nodes in the BN are used
 #'
 #' @return a vector of sum of mutual information between the targets and each of inputs
+#' @importFrom gRain querygrain
 #' @export
 #'
 #' @examples
@@ -226,6 +231,7 @@ smi <- function(bn, targets, inputs = NULL) {
 #' @param maxIter optional, maximum number iterations for the iterations stopping rule
 #'
 #' @return list including posterior marginals of target variables if stopping rule is satisfied, ordered vector of input nodes according to their mutual information if stopping rule is not satisfied
+#' @importFrom gRain querygrain
 #' @export
 #'
 #' @examples

@@ -1,0 +1,140 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# VFQ 25 - Example
+
+## Installing smartPROM
+
+If you are using `smartPROM` for the first time, install it from the github repo. We need the `devtools` library to install libraries from github.
+
+```{r, eval = FALSE}
+library(devtools)
+install_github("byet/smartPROM")
+```
+
+
+## Analysis
+
+
+```{r}
+library(smartPROM)
+```
+
+### Read the dataset
+
+
+```{r}
+df <- read.csv("./data/Cleaned_and_scored_VFQ25.csv")
+```
+
+### Discretize the states
+
+In this example, we will discretize the vfq overall score into two states: `H` = above 75, `L` = below 75.
+
+> You can discretize into more than two intervals by providing a vector to cutoff. Note that, number of states should be one more than number of cutoffs. e.g. `discretize(df$OverallScore, cutoff=C(25,75), states = c('L','M','H'))
+
+```{r}
+intv <- discretize(df$OverallScore, cutoff=75, states = c('L','H'))
+```
+
+We also have a function that ensures disretised intervals are larger than MCID and have about the same size. But this'd be an overkill for this example.
+
+```{r}
+intv <- mipm_intervals(df$OverallScore, threshold=75, MCID= 15, states = c('L','H'), n_interval = 2, Lower_B = 0, Upper_B = 100)
+```
+
+### Measured and Target variables.
+
+We will use questions 1-14, 18-25 as our measured variables. These will be potential inputs that will be asked in our evaluations. We ignored the questions about driving in this example as they had many missing values (non-drivers).
+
+Our target variable is the discretized score we created above. We name it `lf` in our analysis.
+
+
+```{r}
+measured <- paste0("vfq", c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,18,19,20,21,22,23,24,25))
+target <- "lf"
+n_measured <- length(measured)
+
+# Dataset composed of just inputs and target variable.
+dfq <- df[measured]
+dfq[target] <- intv
+```
+
+
+### Learn BN
+
+We use a Naive BN structure in this example. We could have used BN structure built by experts or data-driven structure learning algorithms. 
+
+
+```{r}
+
+naive_bn_dfq <- naivebn_arcs(target,measured)
+bn <- learn_bn(dfq, arc_set= naive_bn_dfq, na_omit = TRUE)
+
+```
+
+
+### Computerized Adaptive Testing with BNs
+
+`cat_iterations` iteratively asks questions from `measured` by using the CAT algorithm. For, every question selected by CAT, we enter the data regarding this question to the BN and get the posterior probability of `target` after entering the data. 
+
+Below, we run `cat_iterations` for the first row of our dataset.
+
+
+```{r}
+res_iter <- cat_iterations(bn, data = dfq[1,], target=target, query = measured, num_iter = n_measured ,store_bns = TRUE)
+```
+
+
+### Results
+
+`distance_to_all_queries` compares the probability distribution of target variables when we enter the responses of first *x* questions entered with CAT to when we enter the responses for all the questions.
+
+
+```{r}
+avedist <- distance_to_all_queries(res_iter)
+print(avedist)
+```
+
+Below we use `errorAllQuestion` to compare the accuracy of predicting target variables when different number of inputs are entered with CAT. This is for only the first row of data. 
+
+
+```{r}
+errorAllQuestions(res_iter$bns, dfq[1,], measured,numericStates = FALSE)
+```
+
+Below we use `errorAllQuestion` to compare the accuracy of predicting responses to unanswered questions when different number of inputs are entered with CAT. This is for only the first row of data. 
+
+```{r}
+errorAllQuestions(res_iter$bns, dfq[1,], target, numericStates = FALSE)
+```
+
+To get the error for all data, we need to compute this for all rows of data and get the average. 
+
+### Running cat for all the data
+
+Below we run CAT for all rows of data. 
+
+
+```{r, warning = FALSE}
+pb <- txtProgressBar(min = 0, max = nrow(dfq), style = 3)
+res <- lapply(1:nrow(dfq), 
+              function(x, data){
+                setTxtProgressBar(pb, x)
+                cat_iterations(bn = bn, target = target, query = measured, data = data[x,], num_iter=n_measured,store_bns = TRUE)},
+              dfq)
+```
+
+
+Below we compute the area under the curve for target variable prediction when different number of questions are selected with CAT. 
+
+
+```{r}
+perf <- performance(res, dfq, targetVars = target)
+perf
+```
+
+
