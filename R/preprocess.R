@@ -90,6 +90,7 @@ match_normal <- function(weights, mu, sd){
 #' @importFrom ompr solve_model
 #' @importFrom ompr MIPModel
 #' @importFrom ompr.roi with_ROI
+#' @import ROI.plugin.glpk
 #' @export
 #'
 #' @examples
