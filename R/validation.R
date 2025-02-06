@@ -25,9 +25,9 @@ learn_bn <-
     train_data <- apply(train_data, 2, as.factor)
     train_data <- as.data.frame(train_data, stringsAsFactors = TRUE)
     if (is.null(arc_set)) {
-      bnfit_graph <- algorithm(train_data)
+      bnfit_graph <- algorithm(train_data, restart=20, perturb=3)
     } else {
-      bnfit_graph <- empty.graph(names(dfq))
+      bnfit_graph <- empty.graph(names(train_data))
       arcs(bnfit_graph) <- arc_set
     }
     bnfit_model <- bn.fit(bnfit_graph, train_data, method = "bayes")
