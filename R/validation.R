@@ -269,7 +269,7 @@ errorAllQuestions <- function(bns, data, questions, numericStates = TRUE) {
 #' @examples
 predictIterations <- function(results, targetVars, niter = NULL){
   if(is.null(niter)){
-    niter <- length(res[[1]]$iter_posteriors)
+    niter <- length(results[[1]]$iter_posteriors)
   }
   iterPreds <- list()
   for(i in 1:niter){
