@@ -216,9 +216,13 @@ questionErrors <- function(bn, data, questions, numericStates = TRUE) {
   trueVals <- data[questions]
   predictions <- map[questions]
   
-  classAccuracy <- mean(trueVals == predictions)
+  # Ignore NA values
+  trueVals_complete <- trueVals[!is.na(trueVals)]
+  predictions_complete <- predictions[!is.na(trueVals)]
+  
+  classAccuracy <- mean(trueVals_complete == predictions_complete)
   if (numericStates) {
-    absError <- mean(as.matrix(abs(trueVals - predictions)))
+    absError <- mean(as.matrix(abs(trueVals_complete - predictions_complete)))
   } else{
     absError <- NA
   }

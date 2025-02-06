@@ -1,13 +1,15 @@
+
 test_that("entropy",{
-  bn <- loadHuginNet("../models/alarm.net")
+  bn <- loadHuginNet("../testmodels/alarm.net")
   target <- c("VENTALV", "VENTTUBE")
   query <- c("ARTCO2")
-  marg_ent <- ent(bn, target, "marginal")
-  expect_equal(names(marg_ent), target)
-  expect_lt(marg_ent[1] - 0.889866244, 0.0000001 )
-  expect_lt(marg_ent[2] - 0.773995889, 0.0000001 )
-  jnt_ent <- ent(bn, target, "joint")
-  expect_lt(jnt_ent - 1.404494867, 0.0000001 )
+  post1 <- querygrain(bn, "VENTALV")
+  expect_lt(dist_entropy(post1) - 0.889866244, 0.0000001 )
+  post2 <- querygrain(bn, "VENTTUBE")
+  expect_lt(dist_entropy(post2) - 0.773995889, 0.0000001 )
+  post3 <- querygrain(bn, target,type="joint")
+  dist_entropy(post3)
+  expect_lt(dist_entropy(post3) - 1.404494867, 0.0000001 )
   
 })
 

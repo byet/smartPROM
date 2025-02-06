@@ -8,5 +8,6 @@
 
 library(testthat)
 library(smartPROM)
+library(gRain)
 
 test_check("smartPROM")
