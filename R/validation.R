@@ -53,7 +53,10 @@ learnOneOut <- function(train_data,
                         na_omit = TRUE) {
   n <- nrow(train_data)
   bns <- vector(mode = "list", length = n)
+  pb <- txtProgressBar(min = 0, max = n, style = 3)
+  
   for (i in 1:n) {
+    setTxtProgressBar(pb, i)
     dataInstance <- train_data[i, ]
     index <- row.names(dataInstance)
     learnData <- train_data[-i, ]
@@ -210,12 +213,19 @@ questionErrors <- function(bn, data, questions, numericStates = TRUE) {
   evNodes <- bn$evidence$nodes
   unknownNodes <- questions[!questions %in% evNodes]
   map <- pred(bn, questions, excludeObs  = FALSE)
-  if (numericStates)
+  
+  if (numericStates){
+    # Numeric comparison based on factor levels
+    combined <- rbind(data[,questions], map[questions])
+    map <- combined[nrow(combined), questions]
     mode(map) <- "numeric"
-  
-  trueVals <- data[questions]
-  predictions <- map[questions]
-  
+    mode(data) <- "numeric"
+    trueVals <- data[,questions]
+    predictions <- map[,questions]
+  } else{
+    trueVals <- data[questions]
+    predictions <- map[questions]
+  }
   # Ignore NA values
   trueVals_complete <- trueVals[!is.na(trueVals)]
   predictions_complete <- predictions[!is.na(trueVals)]

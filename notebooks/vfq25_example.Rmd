@@ -103,13 +103,13 @@ Below we use `errorAllQuestion` to compare the accuracy of predicting target var
 
 
 ```{r}
-errorAllQuestions(res_iter$bns, dfq[1,], measured,numericStates = FALSE)
+errorAllQuestions(res_iter$bns, dfq[1,], target, numericStates = FALSE)
 ```
 
 Below we use `errorAllQuestion` to compare the accuracy of predicting responses to unanswered questions when different number of inputs are entered with CAT. This is for only the first row of data. 
 
 ```{r}
-errorAllQuestions(res_iter$bns, dfq[1,], target, numericStates = FALSE)
+errorAllQuestions(res_iter$bns, dfq[1,], measured, numericStates = TRUE)
 ```
 
 To get the error for all data, we need to compute this for all rows of data and get the average. 
