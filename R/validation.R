@@ -291,7 +291,7 @@ predictIterations <- function(results, targetVars, niter = NULL){
 predictTargets <- function(results, targetVars, iteration=1){
   targetsPreds <- list()
   for(target in targetVars){
-    targetsPreds[[target]] <- probPredictions(res, target, iteration)
+    targetsPreds[[target]] <- probPredictions(results, target, iteration)
   }
   targetsPreds
 }
