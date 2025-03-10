@@ -60,6 +60,85 @@ rand_calc <-
 
 
 
+#' Run random iterations on BN
+#'
+#' Iteratively calculates the BN with randomly selected variables
+#'
+#' @param bn gRain BN object
+#' @param target array of strings. Names of target variables
+#' @param query array of strings. Names of observed variables which the data will be entered.
+#' @param data dataframe row. Columns are variables, values are states of variables.
+#' @param evidence list of keys: variables, values: variable states. Initial evidence for the BN.
+#' @param num_iter integer. Maximum number of iterations to run CAT
+#' @param store_bns logical. Stores BNs at each iterations
+#'
+#' @return
+#' @export
+#'
+#' @examples
+rand_iterations <-   function(bn,
+                              target,
+                              query,
+                              data,
+                              evidence = NULL,
+                              num_iter = 3,
+                              store_bns = FALSE) {
+  init_query <- query
+  init_bn <- bn
+  entered_ev <- c()
+  bns <- vector(mode = "list", length = num_iter)
+  
+  
+  if (!is.null(evidence)) {
+    entered_ev <- c(entered_ev, names(evidence))
+    query <- setdiff(query, names(evidence))
+  }
+  if (length(query) == 0) {
+    warning("No query variables given to estimate")
+    break
+  }
+  
+  posterior_targets <- vector(mode = "list", length = num_iter)
+  query_random_order <- sample(query, num_iter)
+  # Put NA values to the end as gRain gives error if you give initial evidence with NA value
+  na_columns <- is.na(data[query_random_order])
+  if (any(na_columns)) {
+    query_random_order <- c(query_random_order[!na_columns], query_random_order[na_columns])
+  }
+  counter <- 1
+  nvars <- 1 # How many variables to enter data at each iteration
+  
+  for (i in 1:num_iter) {
+    iter_query <- query_random_order[1:i]
+    entered_ev <- unique(c(entered_ev, iter_query))
+    query_ev <- data[entered_ev]
+    bn <-
+      setEvidence(bn,
+                  nodes = names(query_ev),
+                  states = as.character(unlist(query_ev)))
+    query <- setdiff(query, iter_query)
+    if (store_bns)
+      bns[[i]] <- bn
+    
+    posterior <- querygrain(bn, nodes = c(target), type = "marginal")
+    posterior_targets[[i]] <- posterior
+    counter = counter + 1
+    
+  }
+  post <- list(posterior = posterior, evidence = data[entered_ev])
+  post[["iter_posteriors"]] <- posterior_targets
+  if (store_bns)
+    post[["bns"]] <- bns
+  
+  post
+  
+  
+  
+}
+
+
+
+
 #' Runs CAT iterations on BN
 #'
 #' Iteratively calculates the BN with most informative variables
@@ -72,7 +151,7 @@ rand_calc <-
 #' @param num_iter integer. Maximum number of iterations to run CAT
 #' @param entropy_check_thres number. Stopping threshold for target variable entropy
 #' @param mi_check_thres number. Stopping threshold for mutual information of query variables.
-#'
+#' @param store_bns logical. Stores BNs at each iterations
 #' @return list containing posterior = gRain posterior object, evidence = evidence data entered
 #' @importFrom gRain setEvidence
 #' @importFrom gRain querygrain
