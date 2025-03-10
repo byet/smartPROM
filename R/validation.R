@@ -233,10 +233,14 @@ questionErrors <- function(bn, data, questions, numericStates = TRUE) {
   classAccuracy <- mean(trueVals_complete == predictions_complete)
   if (numericStates) {
     absError <- mean(as.matrix(abs(trueVals_complete - predictions_complete)))
+    # Percentage of answers 1 away
+    dist1 <- mean(abs(trueVals_complete - predictions_complete) <= 1)
+    # Percentage of answers 2 away
+    dist2 <- mean(abs(trueVals_complete - predictions_complete) <= 2)
   } else{
     absError <- NA
   }
-  setNames(c(classAccuracy, absError), c("Accuracy", "MAE"))
+  setNames(c(classAccuracy, absError, dist1, dist2), c("Accuracy", "MAE", "1_away", "2_away"))
 }
 
 
