@@ -208,7 +208,7 @@ cat_iterations <-
       
       mi_vars <- cat_result[["mi"]]
       max_mi_vars <- names(mi_vars[1:nvars])
-      if (mi_vars[1] == 0) {
+      if (abs(mi_vars[1]) < 1E-8) {
         warning(paste("Maximum mutual information is 0 at iteration", i))
       }
       entered_ev <- unique(c(entered_ev, max_mi_vars))

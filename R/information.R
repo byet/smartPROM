@@ -178,7 +178,9 @@ mi_bn <- function(bn, target, inputs = NULL) {
   # Mutual information of nodes with evidence are 0
   if (!is.null(bn$evidence$nodes)) {
     nodes <- nodes[!nodes %in% bn$evidence$nodes]
-    mutInfs[bn$evidence$nodes] <- 0.0
+    # Previously we set it zero but sometimes mutual information of unobserved values are -1E10 which is smaller than zero
+    # This caused the some non unobserved variables to never entered
+    mutInfs[bn$evidence$nodes] <- -1E3
   }
   
   for (node in nodes) {
