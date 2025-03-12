@@ -30,7 +30,7 @@ learn_bn <-
       bnfit_graph <- empty.graph(names(train_data))
       arcs(bnfit_graph) <- arc_set
     }
-    bnfit_model <- bn.fit(bnfit_graph, train_data, method = "bayes")
+    bnfit_model <- bn.fit(bnfit_graph, train_data, method = "hard-em", method = "bayes")
     as.grain(bnfit_model)
     
   }
@@ -336,15 +336,54 @@ probPredictions <- function(results, targetVar, iteration){
 performance <- function(results, dataset, targetVars){
   pp <- predictIterations(results, targetVars)
   iter_aucs <- data.frame()
+  iter_lci <- data.frame()
+  iter_uci <- data.frame()
+  
+  if(ci){
+    print("Computing AUCs with bootstrapped confidence intervals")
+  } else{
+    print("Computing AUCs")
+  }
+  
+  pb <- txtProgressBar(min = 0, max = length(pp), style = 3)
   for(i in 1:length(pp)){
+    setTxtProgressBar(pb, i)
     aucs <- c()
+    lower_ci <- c()
+    upper_ci <- c()
     for(target in targetVars){
-      auc <- multiclass.roc(dataset[,target],pp[[i]][[target]])$auc[[1]]
+      iter_dataset <- cbind(y = dataset[,target], pp[[i]][[target]])
+      auc <- multiclass.roc(iter_dataset$y,iter_dataset[, 2:ncol(iter_dataset), drop=FALSE])$auc[[1]]
       aucs <- c(aucs, auc)
+      # Bootstrapped CI
+      if(ci){
+        resample <- bootstraps(iter_dataset, strata = "y", times = bootstrap_samples)
+        resample_aucs <- map_dbl(
+          resample$splits,
+          function(x) {
+            dat <- as.data.frame(x)
+            roc <- multiclass.roc(dat$y, dat[, 2:ncol(dat), drop=FALSE])
+            roc$auc[[1]]
+          }
+        )
+        alpha <- 1 - conf_level
+        lower_bound <- quantile(resample_aucs, probs = alpha / 2)
+        upper_bound <- quantile(resample_aucs, probs = 1 - alpha / 2)
+        
+        lower_ci <- c(lower_ci, lower_bound)
+        upper_ci <- c(upper_ci, upper_bound)
+      }
     }
-    
     iter_aucs <- rbind(iter_aucs, aucs)
+    iter_lci <- rbind(iter_lci, lower_ci)
+    iter_uci <- rbind(iter_uci, upper_ci)
   }
   colnames(iter_aucs) <- targetVars
+  
+  if(ci){
+    colnames(iter_lci) <- targetVars
+    colnames(iter_uci) <- targetVars
+    return(list(aucs = iter_aucs, llci = iter_lci, ulci = iter_uci))
+  }
   iter_aucs
 }
