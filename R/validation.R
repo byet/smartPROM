@@ -30,7 +30,7 @@ learn_bn <-
       bnfit_graph <- empty.graph(names(train_data))
       arcs(bnfit_graph) <- arc_set
     }
-    bnfit_model <- bn.fit(bnfit_graph, train_data, method = "hard-em", method = "bayes")
+    bnfit_model <- bn.fit(bnfit_graph, train_data, method = "hard-em", fit = "bayes")
     as.grain(bnfit_model)
     
   }
