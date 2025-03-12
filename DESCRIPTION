@@ -11,7 +11,8 @@ Imports:
     ROI.plugin.glpk,
     ompr,
     ompr.roi,
-    gRain
+    gRain,
+    rsample
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
