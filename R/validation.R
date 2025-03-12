@@ -333,7 +333,7 @@ probPredictions <- function(results, targetVar, iteration){
 #' @export
 #'
 #' @examples
-performance <- function(results, dataset, targetVars){
+performance <- function(results, dataset, targetVars, ci=TRUE, conf_level = 0.95, bootstrap_samples=2000){
   pp <- predictIterations(results, targetVars)
   iter_aucs <- data.frame()
   iter_lci <- data.frame()
